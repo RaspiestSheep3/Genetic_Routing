@@ -11,6 +11,8 @@ endif()
 
 project ("GeneticRouting")
 
+find_package(nlohmann_json CONFIG REQUIRED)
+
 # Add source to this project's executable.
 add_executable (GeneticRouting "GeneticRouting.cpp" "GeneticModelBase.h" )
 
@@ -19,3 +21,4 @@ if (CMAKE_VERSION VERSION_GREATER 3.12)
 endif()
 
 # TODO: Add tests and install targets if needed.
+target_link_libraries(GeneticRouting PRIVATE nlohmann_json::nlohmann_json)

@@ -5,12 +5,12 @@
 
 using namespace std;
 
-//settings
+//Settings
 int NUM_OF_MODELS = 100;
 int NUM_MODELS_FOR_CROSSOVER = 10;
 double MUTATION_CHANCE = 0.05;
 double MUTATION_SD = 0.01;
-int NUM_OF_ITERATIONS = 1000;
+int NUM_OF_ITERATIONS = 100;
 
 random_device random;
 mt19937 generator(random());
@@ -21,7 +21,6 @@ int main()
 	vector<unique_ptr<Model>> models;
 	vector<tuple<int, double>> outputs = {};
 
-	// Making 100 models (2-3-1 architecture)
 	for (int i = 0; i < NUM_OF_MODELS; i++) {
 		auto model = make_unique<Model>();
 
@@ -34,7 +33,6 @@ int main()
 		models.push_back(std::move(model));
 		outputs.push_back({ i, 0 });
 	}
-
 
 	//For this genetic experiment, the model will take in 2 numbers between 0 and 1 ,a and b.
 	//Output 0 if a < b, output 1 if a >= b
@@ -61,6 +59,7 @@ int main()
 		for (int j = 0; j < models.size(); j++) {
 			double offset = 0;
 
+			//Testing phase
 			for (tuple<double, double, double> set : inputs) {
 				vector<double> modelInputs = { get<0>(set), get<1>(set) };
 				double out = models[j]->RunAlgorithm(modelInputs)[0];
@@ -113,6 +112,11 @@ int main()
 
 	cout << "Most effective score : " << get<1>(outputs[0]) << endl;
 
+	const auto filepath = filesystem::current_path() / "Models" / "1.json";
+
+	cout << "filepath exists?: " << filepath << endl;
+
+	models[get<0>(outputs[0])]->SaveModelWeights(filepath);
 	//for (auto output : outputs) cout << get<1>(output) << endl;
 
 	return 0;

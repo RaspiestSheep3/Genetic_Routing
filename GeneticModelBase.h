@@ -4,8 +4,12 @@
 #include <vector>
 #include <cmath>
 #include <random>
+#include <fstream>
+#include <nlohmann/json.hpp>
+#include <filesystem>
 
 using namespace std;
+using json = nlohmann::json;
 
 /*
 My goal is to make a generic neuroevolving model base, which can be adapted for whatever else I want to
@@ -59,6 +63,9 @@ public:
 	void GenerateRawList();
 
 	unique_ptr<Model> Clone();
+
+	void SaveModelWeights(filesystem::path filepath);
+	void LoadModelFromWeights(filesystem::path filepath);
 };
 
 using namespace std;
@@ -182,4 +189,33 @@ unique_ptr<Model> Model::Clone() {
 		clonedModel->rawPerceptrons[i]->bias = rawPerceptrons[i]->bias;
 	}
 	return clonedModel;
+}
+
+void Model::SaveModelWeights(filesystem::path filepath) {
+	json modelJSON = {
+		{"Perceptron Biases", {}},
+		{"Edge Weights", {}}
+	};
+
+	for (size_t i = 0; i < rawPerceptrons.size(); i++) modelJSON["Perceptron Biases"].push_back(rawPerceptrons[i]->bias);
+	for (size_t i = 0; i < rawEdges.size(); i++) modelJSON["Edge Weights"].push_back(rawEdges[i]->weight);
+
+	ofstream file(filepath);
+
+	if (!file.is_open()) {
+		cerr << "ERROR: Failed to open file." << endl;
+		return;
+	}
+
+	file << modelJSON.dump(4);
+	file.close();
+}
+
+void Model::LoadModelFromWeights(filesystem::path filepath) {
+	ifstream file(filepath);
+	json modelJSON = json::parse(file);
+	file.close();
+
+	for (int i = 0; i < rawPerceptrons.size(); i++) rawPerceptrons[i]->bias = modelJSON["Perceptron Biases"][i];
+	for (int i = 0; i < rawEdges.size(); i++) rawEdges[i]->weight = modelJSON["Edge Weights"][i];
 }
